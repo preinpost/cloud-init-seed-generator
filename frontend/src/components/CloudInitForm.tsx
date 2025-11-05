@@ -7,7 +7,18 @@ interface CloudInitData {
   include_network: boolean
 }
 
+// 랜덤 문자열 생성 함수 (최대 8자리)
+const generateRandomId = (length: number = 8): string => {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789'
+  let result = ''
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  return result
+}
+
 export default function CloudInitForm() {
+  const randomId = generateRandomId(8)
   const [formData, setFormData] = useState<CloudInitData>({
     user_data: `#cloud-config
 users:
@@ -18,6 +29,10 @@ users:
     groups: sudo
     shell: /bin/bash
 
+packages:
+  - curl
+  - ca-certificates
+
 chpasswd:
   list: |
     ubuntu:ubuntu
@@ -26,8 +41,8 @@ ssh_pwauth: True
 
 runcmd:
   - echo "Cloud-init setup complete" > /tmp/cloud-init-done`,
-    meta_data: `instance-id: i-1234567890abcdef0
-local-hostname: my-instance`,
+    meta_data: `instance-id: i-${randomId}
+local-hostname: instance-${randomId}`,
     network_config: `version: 2
 ethernets:
   eth0:
